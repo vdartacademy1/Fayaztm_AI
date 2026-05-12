@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>OmniBot AI · Trainable ML · Direct News Links</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(145deg, #0b1120 0%, #0a0f1a 100%);
+      min-height: 100vh;
+      padding: 1.2rem;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .app-container {
+      width: 100%;
+      max-width: 1400px;
+      height: 92vh;
+      background: rgba(12, 20, 32, 0.65);
+      backdrop-filter: blur(14px);
+      border-radius: 2rem;
+      border: 1px solid rgba(255,255,255,0.15);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: 0 25px 40px rgba(0,0,0,0.4);
+    }
+    .header {
+      padding: 0.8rem 1.5rem;
+      background: rgba(0,0,0,0.3);
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .logo { display: flex; align-items: center; gap: 10px; }
+    .logo i { font-size: 1.6rem; color: #3b82f6; }
+    .logo h2 { font-size: 1.2rem; font-weight: 600; color: white; }
+    .badge { background: rgba(59,130,246,0.2); padding: 0.2rem 0.7rem; border-radius: 2rem; font-size: 0.65rem; color: #93c5fd; }
+    .toolbar { display: flex; gap: 8px; flex-wrap: wrap; }
+    .tool-btn {
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 2rem;
+      padding: 0.4rem 1rem;
+      color: #e2e8f0;
+      cursor: pointer;
+      transition: 0.2s;
+      font-size: 0.75rem;
+    }
+    .tool-btn i { margin-right: 6px; }
+    .tool-btn:hover { background: #3b82f6; border-color: #3b82f6; transform: translateY(-1px); }
+    .clear-btn { background: rgba(220, 38, 38, 0.5); }
+    .clear-btn:hover { background: #dc2626; }
+    .nav-bar {
+      display: flex;
+      gap: 10px;
+      padding: 0.6rem 1.2rem;
+      background: rgba(0,0,0,0.2);
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      flex-wrap: wrap;
+    }
+    .nav-btn {
+      background: rgba(30, 41, 59, 0.6);
+      border: none;
+      border-radius: 2rem;
+      padding: 0.4rem 1.2rem;
+      color: #cbd5e1;
+      font-size: 0.8rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .nav-btn:hover { background: #3b82f6; color: white; transform: translateY(-1px); }
+    .train-panel {
+      background: rgba(0,0,0,0.3);
+      padding: 0.6rem 1.2rem;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+      font-size: 0.8rem;
+    }
+    .train-panel input {
+      background: rgba(15,23,42,0.9);
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 2rem;
+      padding: 0.4rem 1rem;
+      color: white;
+      outline: none;
+      flex: 1;
+      min-width: 150px;
+    }
+    .train-panel button {
+      background: #10b981;
+      border: none;
+      border-radius: 2rem;
+      padding: 0.4rem 1rem;
+      color: white;
+      cursor: pointer;
+    }
+    .train-panel button:hover { background: #059669; }
+    .main-grid { display: flex; flex: 1; overflow: hidden; }
+    .chat-panel { flex: 2; display: flex; flex-direction: column; border-right: 1px solid rgba(255,255,255,0.08); }
+    .messages-area { flex: 1; overflow-y: auto; padding: 1.2rem; display: flex; flex-direction: column; gap: 1rem; }
+    .message { display: flex; align-items: flex-start; gap: 12px; max-width: 85%; animation: fadeIn 0.2s ease; position: relative; }
+    .user-message { align-self: flex-end; flex-direction: row-reverse; }
+    .bot-message { align-self: flex-start; }
+    .bubble {
+      background: rgba(30, 41, 59, 0.8);
+      border-radius: 1.4rem;
+      padding: 0.7rem 1rem;
+      border: 1px solid rgba(255,255,255,0.1);
+      font-size: 0.9rem;
+      line-height: 1.45;
+      color: #e2e8f0;
+      position: relative;
+    }
+    .user-message .bubble { background: linear-gradient(125deg, #3b82f6, #6366f1); color: white; border: none; }
+    .msg-icon { width: 32px; height: 32px; background: rgba(100,116,139,0.3); border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+    .confidence {
+      font-size: 0.65rem;
+      opacity: 0.7;
+      margin-top: 4px;
+      display: block;
+    }
+    .message-actions {
+      position: absolute;
+      bottom: 2px;
+      right: -20px;
+      display: flex;
+      gap: 8px;
+      opacity: 0;
+      transition: 0.2s;
+      background: rgba(0,0,0,0.5);
+      border-radius: 20px;
+      padding: 2px 8px;
+      z-index: 5;
+    }
+    .user-message:hover .message-actions { opacity: 1; }
+    .message-action-btn {
+      background: none;
+      border: none;
+      color: #cbd5e1;
+      cursor: pointer;
+      font-size: 0.75rem;
+      padding: 2px;
+      transition: 0.1s;
+    }
+    .message-action-btn:hover { color: #fbbf24; transform: scale(1.1); }
+    .feedback-buttons {
+      position: absolute;
+      bottom: 4px;
+      right: 8px;
+      display: flex;
+      gap: 6px;
+      opacity: 0.5;
+      transition: 0.2s;
+    }
+    .bot-message .bubble:hover .feedback-buttons { opacity: 1; }
+    .feedback-btn { background: none; border: none; color: #94a3b8; cursor: pointer; font-size: 0.7rem; }
+    .feedback-btn:hover { color: #fbbf24; }
+    .news-card {
+      background: rgba(0,0,0,0.3);
+      border-radius: 1rem;
+      padding: 0.7rem;
+      margin-top: 0.5rem;
+      border-left: 3px solid #3b82f6;
+    }
+    .news-title {
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    .news-title a {
+      color: #e2e8f0;
+      text-decoration: none;
+      cursor: pointer;
+    }
+    .news-title a:hover {
+      text-decoration: underline;
+      color: #3b82f6;
+    }
+    .show-more-btn {
+      background: rgba(59,130,246,0.3);
+      border: 1px solid #3b82f6;
+      border-radius: 2rem;
+      padding: 0.3rem 1rem;
+      margin-top: 0.5rem;
+      color: #93c5fd;
+      cursor: pointer;
+      font-size: 0.75rem;
+      transition: 0.2s;
+    }
+    .show-more-btn:hover { background: #3b82f6; color: white; }
+    .input-area { padding: 1rem; background: rgba(0,0,0,0.4); border-top: 1px solid rgba(255,255,255,0.1); display: flex; gap: 10px; }
+    .input-area input { flex: 1; background: rgba(15,23,42,0.8); border: 1px solid rgba(255,255,255,0.2); border-radius: 3rem; padding: 0.8rem 1.2rem; color: white; outline: none; }
+    .input-area button { background: #3b82f6; border: none; width: 44px; border-radius: 44px; color: white; cursor: pointer; }
+    .side-panel { flex: 1; background: rgba(0,0,0,0.2); padding: 1.2rem; display: flex; flex-direction: column; gap: 1rem; overflow-y: auto; }
+    .camera-box { background: rgba(0,0,0,0.5); border-radius: 1rem; padding: 0.8rem; text-align: center; }
+    video, #photoCanvas { width: 100%; border-radius: 1rem; background: #000; }
+    #photoCanvas { display: none; }
+    .voice-status { font-size: 0.7rem; color: #4ade80; margin-top: 4px; }
+    @keyframes fadeIn { from { opacity:0; transform: translateY(8px); } to { opacity:1; transform: translateY(0); } }
+    @media (max-width: 800px) { .main-grid { flex-direction: column; } .chat-panel { border-right: none; } .message { max-width: 95%; } .message-actions { right: -10px; } }
+    ::-webkit-scrollbar { width: 4px; }
+  </style>
+</head>
+<body>
+<div class="app-container">
+  <div class="header">
+    <div class="logo"><i class="fas fa-brain"></i><h2>OmniBot AI</h2><span class="badge">ML trainable · direct links</span></div>
+    <div class="toolbar">
+      <button id="newsBtn" class="tool-btn"><i class="fas fa-newspaper"></i> Top News</button>
+      <button id="voiceBtn" class="tool-btn"><i class="fas fa-microphone"></i> Voice</button>
+      <button id="cameraBtn" class="tool-btn"><i class="fas fa-camera"></i> Camera</button>
+      <button id="clearChatBtn" class="tool-btn clear-btn"><i class="fas fa-trash-alt"></i> Clear Chat</button>
+    </div>
+  </div>
+  <div class="nav-bar">
+    <button id="ukNewsBtn" class="nav-btn"><i class="fas fa-flag"></i> UK News</button>
+    <button id="businessNewsBtn" class="nav-btn"><i class="fas fa-chart-line"></i> Business</button>
+    <button id="techNewsBtn" class="nav-btn"><i class="fas fa-microchip"></i> Technology</button>
+  </div>
+  <div class="train-panel">
+    <i class="fas fa-robot" style="color:#3b82f6;"></i>
+    <input type="text" id="trainQuestion" placeholder="Ask me a question you want me to learn...">
+    <input type="text" id="trainAnswer" placeholder="... and the answer I should give">
+    <button id="trainBtn"><i class="fas fa-graduation-cap"></i> Teach OmniBot</button>
+    <span style="font-size:0.7rem; opacity:0.7;">🧠 ML model learns from you</span>
+  </div>
+  <div class="main-grid">
+    <div class="chat-panel">
+      <div class="messages-area" id="chatMessages"></div>
+      <div class="input-area">
+        <input type="text" id="userInput" placeholder="Ask or teach me anything... (click ✏️ on your message to edit)" autocomplete="off">
+        <button id="sendBtn"><i class="fas fa-paper-plane"></i></button>
+      </div>
+    </div>
+    <div class="side-panel">
+      <div class="camera-box">
+        <div><i class="fas fa-video"></i> Camera snapshot</div>
+        <video id="video" autoplay playsinline></video>
+        <button id="snapshotBtn" style="margin-top:8px; background:#3b82f6; border:none; padding:6px 12px; border-radius:40px; color:white;"><i class="fas fa-camera-retro"></i> Capture photo</button>
+        <canvas id="photoCanvas" width="200" height="150" style="display:none;"></canvas>
+        <div id="cameraStatus" class="voice-status">📸 Click capture → share with bot</div>
+      </div>
+      <div class="camera-box">
+        <div><i class="fas fa-microphone-alt"></i> Voice control</div>
+        <div id="voiceStatusText" class="voice-status">🎤 Press 'Voice' button & speak</div>
+        <div><i class="fas fa-chart-line"></i> ML model size: <span id="modelSize">0</span> trained patterns</div>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+  // ======================== ML MODEL ========================
+  class SimpleMLModel {
+    constructor() {
+      this.patterns = [];
+      this.loadFromStorage();
+    }
+    tokenize(text) {
+      return text.toLowerCase().replace(/[^\w\s]/g, '').split(/\s+/).filter(w => w.length > 1);
+    }
+    train(question, answer) {
+      if (!question.trim() || !answer.trim()) return false;
+      const keywords = this.tokenize(question);
+      if (keywords.length === 0) return false;
+      this.patterns.push({ keywords, response: answer.trim() });
+      this.saveToStorage();
+      return true;
+    }
+    predict(query) {
+      if (this.patterns.length === 0) return null;
+      const queryTokens = this.tokenize(query);
+      if (queryTokens.length === 0) return null;
+      let bestScore = 0;
+      let bestResponse = null;
+      for (let pattern of this.patterns) {
+        let matchCount = 0;
+        for (let q of queryTokens) {
+          if (pattern.keywords.some(k => k.includes(q) || q.includes(k))) matchCount++;
+        }
+        const totalUnique = new Set([...queryTokens, ...pattern.keywords]).size;
+        let score = matchCount / Math.sqrt(totalUnique + 1);
+        if (score > bestScore && score > 0.2) {
+          bestScore = score;
+          bestResponse = pattern.response;
+        }
+      }
+      if (bestResponse && bestScore > 0.25) {
+        return { response: bestResponse, confidence: Math.min(0.95, bestScore).toFixed(2) };
+      }
+      return null;
+    }
+    saveToStorage() {
+      localStorage.setItem('omnibot_ml_patterns', JSON.stringify(this.patterns));
+      this.updateUICount();
+    }
+    loadFromStorage() {
+      const stored = localStorage.getItem('omnibot_ml_patterns');
+      if (stored) {
+        try { this.patterns = JSON.parse(stored); } catch(e) { this.patterns = []; }
+      }
+      this.updateUICount();
+    }
+    updateUICount() {
+      const span = document.getElementById('modelSize');
+      if (span) span.innerText = this.patterns.length;
+    }
+  }
+
+  const mlModel = new SimpleMLModel();
+
+  // ======================== DOM ELEMENTS ========================
+  const chatContainer = document.getElementById('chatMessages');
+  const userInput = document.getElementById('userInput');
+  const sendBtn = document.getElementById('sendBtn');
+  const newsBtn = document.getElementById('newsBtn');
+  const voiceBtn = document.getElementById('voiceBtn');
+  const cameraBtn = document.getElementById('cameraBtn');
+  const snapshotBtn = document.getElementById('snapshotBtn');
+  const video = document.getElementById('video');
+  const photoCanvas = document.getElementById('photoCanvas');
+  const ukNewsBtn = document.getElementById('ukNewsBtn');
+  const businessNewsBtn = document.getElementById('businessNewsBtn');
+  const techNewsBtn = document.getElementById('techNewsBtn');
+  const trainQuestion = document.getElementById('trainQuestion');
+  const trainAnswer = document.getElementById('trainAnswer');
+  const trainBtn = document.getElementById('trainBtn');
+  const clearChatBtn = document.getElementById('clearChatBtn');
+
+  let mediaStream = null;
+  let recognition = null;
+
+  function escapeHtml(str) {
+    if (!str) return '';
+    return str.replace(/[&<>]/g, m => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;' }[m] || m));
+  }
+
+  // ---------- Convert RSS item link to a direct, absolute article URL ----------
+  function toDirectArticleUrl(link) {
+    if (!link) return '#';
+    let url = link.replace(/&amp;/g, '&');
+    // If it's a relative path (starts with /), prepend BBC base
+    if (url.startsWith('/')) {
+      url = 'https://www.bbc.com' + url;
+    }
+    // If it's a Google News redirect, keep as is (it redirects to the real article)
+    if (url.startsWith('https://news.google.com')) {
+      // Google News links already work directly
+    }
+    // Ensure protocol
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+      url = 'https://' + url;
+    }
+    return url;
+  }
+
+  // ---------- Render news cards with "follow" links (same tab) ----------
+  function renderNewsCards(items, containerDiv, showMoreCallback, pageSize = 5) {
+    let currentCount = items.length;
+    let shown = Math.min(pageSize, currentCount);
+    let cardsHtml = '';
+    for (let i = 0; i < shown; i++) {
+      const articleUrl = toDirectArticleUrl(items[i].link);
+      cardsHtml += `
+        <div class="news-card">
+          <div class="news-title">
+            <a href="${articleUrl}" target="_self" rel="noopener noreferrer">📰 ${escapeHtml(items[i].title)}</a>
+          </div>
+          <div style="font-size:10px; opacity:0.7;">${items[i].pubDate?.slice(0,16) || ''}</div>
+        </div>
+      `;
+    }
+    containerDiv.innerHTML = cardsHtml;
+    if (currentCount > shown) {
+      const moreBtn = document.createElement('button');
+      moreBtn.innerText = `Show more (${currentCount - shown} more)`;
+      moreBtn.className = 'show-more-btn';
+      moreBtn.onclick = () => showMoreCallback(containerDiv, items, pageSize);
+      containerDiv.appendChild(moreBtn);
+    }
+  }
+
+  function showMoreNews(container, allItems, currentPageSize) {
+    const newShown = Math.min(allItems.length, currentPageSize + 5);
+    let cards = '';
+    for (let i = 0; i < newShown; i++) {
+      const articleUrl = toDirectArticleUrl(allItems[i].link);
+      cards += `
+        <div class="news-card">
+          <div class="news-title">
+            <a href="${articleUrl}" target="_self" rel="noopener noreferrer">📰 ${escapeHtml(allItems[i].title)}</a>
+          </div>
+          <div style="font-size:10px; opacity:0.7;">${allItems[i].pubDate?.slice(0,16) || ''}</div>
+        </div>
+      `;
+    }
+    container.innerHTML = cards;
+    if (allItems.length > newShown) {
+      const moreBtn = document.createElement('button');
+      moreBtn.innerText = `Show more (${allItems.length - newShown} more)`;
+      moreBtn.className = 'show-more-btn';
+      moreBtn.onclick = () => showMoreNews(container, allItems, newShown);
+      container.appendChild(moreBtn);
+    }
+  }
+
+  // ---------- Append message ----------
+  function appendMessage(text, isUser = false, extraHtml = null, confidence = null) {
+    const msgDiv = document.createElement('div');
+    msgDiv.className = `message ${isUser ? 'user-message' : 'bot-message'}`;
+    const icon = isUser ? '<i class="fas fa-user"></i>' : '<i class="fas fa-robot"></i>';
+    let content = `<div class="msg-icon">${icon}</div><div class="bubble">`;
+    if (extraHtml) {
+      content += extraHtml;
+    } else {
+      content += escapeHtml(text);
+      if (confidence && !isUser) {
+        content += `<div class="confidence">🧠 ML confidence: ${confidence}</div>`;
+      }
+    }
+    if (!isUser && !extraHtml) {
+      content += `<div class="feedback-buttons">
+        <button class="feedback-btn" onclick="markHelpful(this)"><i class="fas fa-thumbs-up"></i></button>
+        <button class="feedback-btn" onclick="markNotHelpful(this)"><i class="fas fa-thumbs-down"></i></button>
+      </div>`;
+    }
+    content += `</div>`;
+    if (isUser && !extraHtml) {
+      content += `<div class="message-actions">
+        <button class="message-action-btn" onclick="copyUserMessage(this)" title="Copy text"><i class="fas fa-copy"></i></button>
+        <button class="message-action-btn" onclick="editUserMessage(this)" title="Edit and resend"><i class="fas fa-pencil-alt"></i></button>
+      </div>`;
+    }
+    msgDiv.innerHTML = content;
+    chatContainer.appendChild(msgDiv);
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+    saveChatToLocal();
+  }
+
+  // Global helpers
+  window.copyUserMessage = (btn) => {
+    const bubble = btn.closest('.message').querySelector('.bubble');
+    const text = bubble.innerText.split('🧠')[0].trim();
+    navigator.clipboard.writeText(text);
+    const original = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-check"></i>';
+    setTimeout(() => { btn.innerHTML = original; }, 1000);
+  };
+  window.editUserMessage = (btn) => {
+    const bubble = btn.closest('.message').querySelector('.bubble');
+    let text = bubble.innerText.split('🧠')[0].trim();
+    userInput.value = text;
+    userInput.focus();
+  };
+  window.markHelpful = (btn) => {
+    alert("Thanks! I'll remember this answer was helpful.");
+  };
+  window.markNotHelpful = (btn) => {
+    alert("Sorry about that. Use the training panel to teach me the correct answer.");
+  };
+
+  function speakText(message) {
+    if (!window.speechSynthesis) return;
+    const utterance = new SpeechSynthesisUtterance(message);
+    utterance.lang = 'en-US';
+    utterance.rate = 0.95;
+    window.speechSynthesis.cancel();
+    window.speechSynthesis.speak(utterance);
+  }
+
+  function showTypingAndRespond(callback) {
+    const typingDiv = document.createElement('div');
+    typingDiv.className = 'message bot-message';
+    typingDiv.id = 'typingIndicator';
+    typingDiv.innerHTML = `<div class="msg-icon"><i class="fas fa-robot"></i></div><div class="bubble" style="background:rgba(30,41,59,0.6);">✦ thinking ✦</div>`;
+    chatContainer.appendChild(typingDiv);
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+    setTimeout(() => {
+      document.getElementById('typingIndicator')?.remove();
+      callback();
+    }, 400);
+  }
+
+  // LocalStorage chat history
+  const STORAGE_KEY = 'omnibot_chat_history';
+  function saveChatToLocal() {
+    const messages = [];
+    document.querySelectorAll('#chatMessages .message').forEach(msgDiv => {
+      const isUser = msgDiv.classList.contains('user-message');
+      const bubble = msgDiv.querySelector('.bubble');
+      if (bubble) {
+        let content = bubble.innerText.split('🧠')[0].trim();
+        messages.push({ isUser, content });
+      }
+    });
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(messages.slice(-60)));
+  }
+  function loadChatFromLocal() {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) {
+      try {
+        const msgs = JSON.parse(stored);
+        chatContainer.innerHTML = '';
+        msgs.forEach(msg => appendMessage(msg.content, msg.isUser));
+        return true;
+      } catch(e) {}
+    }
+    return false;
+  }
+
+  // ======================== NEWS (using RSS2JSON proxy, converting to direct article links) ========================
+  async function fetchNewsFromRSS(rssUrl) {
+    const proxy = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rssUrl)}`;
+    try {
+      const res = await fetch(proxy);
+      const data = await res.json();
+      if (data && data.items) return data.items.map(item => ({ title: item.title, link: item.link, pubDate: item.pubDate }));
+      return [];
+    } catch(e) { console.warn(e); return []; }
+  }
+
+  async function getCategoryNewsWithShowMore(rssUrl, title, icon) {
+    const items = await fetchNewsFromRSS(rssUrl);
+    if (!items.length) return `<div>⚠️ Could not fetch ${title} news.</div>`;
+    const containerId = `news-${Date.now()}-${Math.random()}`;
+    const wrapper = `<div id="${containerId}"></div>`;
+    setTimeout(() => {
+      const container = document.getElementById(containerId);
+      if (container) renderNewsCards(items, container, (cont, all, shown) => showMoreNews(cont, all, shown), 5);
+    }, 10);
+    return `<div><i class="fas ${icon}"></i> <strong>${title}</strong> (click headline to follow link)</div>${wrapper}`;
+  }
+
+  const getTopWorldNews = () => getCategoryNewsWithShowMore("http://feeds.bbci.co.uk/news/world/rss.xml", "🌍 Top World News (BBC)", "fa-globe");
+  const getUKNews = () => getCategoryNewsWithShowMore("http://feeds.bbci.co.uk/news/uk/rss.xml", "🇬🇧 UK News (BBC)", "fa-flag");
+  const getBusinessNews = () => getCategoryNewsWithShowMore("http://feeds.bbci.co.uk/news/business/rss.xml", "📈 Business News (BBC)", "fa-chart-line");
+  const getTechnologyNews = () => getCategoryNewsWithShowMore("http://feeds.bbci.co.uk/news/technology/rss.xml", "💻 Technology News (BBC)", "fa-microchip");
+
+  async function searchNewsByKeyword(keyword) {
+    if (keyword.length < 2) return "Please provide a longer keyword.";
+    const googleRss = `https://news.google.com/rss/search?q=${encodeURIComponent(keyword)}&hl=en-US&gl=US&ceid=US:en`;
+    const items = await fetchNewsFromRSS(googleRss);
+    if (!items.length) return `No news for "${escapeHtml(keyword)}".`;
+    let html = `<div><i class="fas fa-search"></i> <strong>🔎 News: "${escapeHtml(keyword)}"</strong></div>`;
+    items.slice(0, 10).forEach(item => {
+      const articleUrl = toDirectArticleUrl(item.link);
+      html += `<div class="news-card">
+        <div class="news-title"><a href="${articleUrl}" target="_self" rel="noopener noreferrer">📌 ${escapeHtml(item.title)}</a></div>
+        <div style="font-size:10px;">${item.pubDate?.slice(0,16) || ''}</div>
+      </div>`;
+    });
+    return html;
+  }
+
+  // ======================== BOT PROCESSOR ========================
+  async function botProcess(userText) {
+    const lower = userText.toLowerCase();
+    const mlResult = mlModel.predict(userText);
+    if (mlResult && mlResult.response) {
+      appendMessage(mlResult.response, false, null, mlResult.confidence);
+      return;
+    }
+    if (lower.includes("top news") || lower === "news") {
+      const html = await getTopWorldNews();
+      appendMessage("", false, html);
+      return;
+    }
+    if (lower.includes("uk news") || lower === "uk") {
+      const html = await getUKNews();
+      appendMessage("", false, html);
+      return;
+    }
+    if (lower.includes("business news") || lower === "business") {
+      const html = await getBusinessNews();
+      appendMessage("", false, html);
+      return;
+    }
+    if (lower.includes("tech news") || lower === "tech") {
+      const html = await getTechnologyNews();
+      appendMessage("", false, html);
+      return;
+    }
+    if (lower.includes("news about") || lower.includes("search news")) {
+      let keyword = userText.match(/news about (.+)/i)?.[1] || userText.match(/search news (.+)/i)?.[1];
+      if (keyword) {
+        const html = await searchNewsByKeyword(keyword.trim());
+        appendMessage("", false, html);
+        return;
+      }
+    }
+    if (lower.match(/hello|hi|hey/)) {
+      appendMessage("👋 Hello! I'm your trainable ML assistant. Use the training panel to teach me. Try 'top news', 'uk news', 'business', 'tech'. Each headline is a direct link to the article (follow link, same tab).", false);
+      return;
+    }
+    appendMessage("I don't know that yet. Use the training panel to teach me the correct answer! Or try 'top news', 'uk news', 'business news', 'tech news'.", false);
+  }
+
+  // ======================== VOICE & CAMERA ========================
+  function initSpeechRecog() {
+    if (!('webkitSpeechRecognition' in window)) {
+      document.getElementById('voiceStatusText').innerHTML = "❌ Not supported";
+      return null;
+    }
+    const SpeechRecognition = window.webkitSpeechRecognition;
+    const recog = new SpeechRecognition();
+    recog.continuous = false;
+    recog.interimResults = false;
+    recog.lang = 'en-US';
+    recog.onstart = () => document.getElementById('voiceStatusText').innerHTML = "🎙️ Listening...";
+    recog.onend = () => document.getElementById('voiceStatusText').innerHTML = "🎤 Voice ready";
+    recog.onresult = (e) => {
+      const transcript = e.results[0][0].transcript;
+      document.getElementById('voiceStatusText').innerHTML = `🗣️ "${transcript}"`;
+      userInput.value = transcript;
+      handleUserMessage(transcript);
+    };
+    recog.onerror = () => document.getElementById('voiceStatusText').innerHTML = "⚠️ Error";
+    return recog;
+  }
+  async function startCamera() {
+    if (mediaStream) mediaStream.getTracks().forEach(t => t.stop());
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      mediaStream = stream;
+      video.srcObject = stream;
+      document.getElementById('cameraStatus').innerHTML = "✅ Camera active";
+    } catch(err) {
+      document.getElementById('cameraStatus').innerHTML = "❌ Camera denied";
+    }
+  }
+  function capturePhoto() {
+    if (!video.srcObject) { alert("Start camera first"); return; }
+    const ctx = photoCanvas.getContext('2d');
+    photoCanvas.width = video.videoWidth || 400;
+    photoCanvas.height = video.videoHeight || 300;
+    ctx.drawImage(video, 0, 0, photoCanvas.width, photoCanvas.height);
+    const imgData = photoCanvas.toDataURL('image/png');
+    const imgHtml = `<div><i class="fas fa-camera"></i> 📸 Snapshot</div><img src="${imgData}" style="max-width:180px; border-radius:12px; margin-top:6px;"><div style="font-size:11px;">Ask me about this photo!</div>`;
+    appendMessage("", false, imgHtml);
+  }
+  async function handleUserMessage(text) {
+    if (!text.trim()) return;
+    appendMessage(text, true);
+    userInput.value = '';
+    showTypingAndRespond(async () => {
+      await botProcess(text);
+    });
+  }
+
+  // ======================== CLEAR CHAT ========================
+  function clearChat() {
+    chatContainer.innerHTML = '';
+    appendMessage("🌍 Chat cleared. I'm OmniBot with trainable ML, direct article links, and 'Show more' for each category. Try 'top news', 'uk news', 'business', 'tech'.", false);
+    localStorage.removeItem(STORAGE_KEY);
+  }
+
+  // ======================== TRAINING ========================
+  trainBtn.addEventListener('click', () => {
+    const q = trainQuestion.value.trim();
+    const a = trainAnswer.value.trim();
+    if (!q || !a) {
+      alert("Please enter both a question and an answer.");
+      return;
+    }
+    if (mlModel.train(q, a)) {
+      appendMessage(`✅ I've learned: "${q}" → "${a}"`, false);
+      trainQuestion.value = '';
+      trainAnswer.value = '';
+    } else {
+      alert("Training failed. Use longer words.");
+    }
+  });
+
+  // Event listeners
+  sendBtn.addEventListener('click', () => handleUserMessage(userInput.value));
+  userInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') handleUserMessage(userInput.value); });
+  newsBtn.addEventListener('click', () => handleUserMessage("top news"));
+  ukNewsBtn.addEventListener('click', () => handleUserMessage("uk news"));
+  businessNewsBtn.addEventListener('click', () => handleUserMessage("business news"));
+  techNewsBtn.addEventListener('click', () => handleUserMessage("tech news"));
+  cameraBtn.addEventListener('click', startCamera);
+  snapshotBtn.addEventListener('click', capturePhoto);
+  clearChatBtn.addEventListener('click', clearChat);
+  if ('webkitSpeechRecognition' in window) {
+    recognition = initSpeechRecog();
+    voiceBtn.addEventListener('click', () => recognition?.start());
+  } else {
+    voiceBtn.disabled = true;
+  }
+  window.addEventListener('load', () => {
+    if (!loadChatFromLocal()) {
+      appendMessage("🌍 Hello! I'm OmniBot with trainable ML, direct article links (same tab), and 'Show more' for each category. Try 'top news', 'uk news', 'business', 'tech'. Each headline opens the original article in this window – a true follow link.", false);
+    }
+    mlModel.updateUICount();
+  });
+</script>
+</body>
+</html>
